@@ -1,9 +1,10 @@
 //PART 3
 //스케쥴링만 안함(아마도)
 // case 번호 쪽 참고할 것. 맞춰가야함
-//서보모터 직접 다뤄보고 재수정 필요
-//후드 속도 조절 필요하면 핀 아날로그로 꽂아야하나?
-//g
+//앱으로 조종하는건 toggle X, 리모컨 조종 필요 시 토글 o
+//가스값 보내는거
+//후드는 only 리모컨-O
+//밸브 onoff 빼버려-O
 
 #include <SoftwareSerial.h>   //소프트웨어 시리얼 라이브러리 추가(앱)
 #include <U8glib.h>           //u8g 라이브러리 추가 ( OLED 화면 )
@@ -29,13 +30,13 @@ Servo servo4;                  //가스 밸브 서보모터 객체 생성
 
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE);      //SSD1306 128X64 I2C 규격 선택  ( OLED 화면 )
 
-SoftwareSerial mySerial(TXD, RXD);                //소프트웨어 시리얼 mySerial 객체 선언(앱)
+SoftwareSerial btSerial(TXD, RXD);                //소프트웨어 시리얼 mySerial 객체 선언(앱)
 
 int value = 0;                          //터치센서 스위칭 횟수
 
 
 void setup() {
-  mySerial.begin(9600);     //소프트웨어 시리얼 동기화(앱)
+  btSerial.begin(9600);     //소프트웨어 시리얼 동기화(앱)
 
   servo3.attach(SERVO_WIN);    //부엌 창문 서보 모터 제어 위한 핀 설정
   servo4.attach(SERVO_GAS);    //가스밸브 서보 모터 제어 위한 핀 설정
@@ -61,7 +62,6 @@ void loop() {
 //변수 설정
   int gasValue = analogRead(GAS_OUT);           //아날로그데이터 읽어 gasValue 저장(가스센서 신호)
   value = digitalRead(TOUCH);                  //디지털 데이터 읽어 value에 저장(터치 신호)
-  bool led2State = false;                       //방2 led 상태 저장 변수
   bool hoodState = false;                       //후드 상태 저장 변수
 
 //초음파 준비
@@ -101,9 +101,8 @@ void loop() {
     servo4.detach();         //서보모터 출력 신호 정지
   }
 
-  mySerial.print(gasValue,1);     //앱 화면으로 가스 누출량 출력
-  mySerial.print(" ");
-
+  btSerial.print(gasValue,1);     //앱 화면으로 가스 누출량 출력
+  btSerial.print(" ");
 
 
   //후드(수동)
@@ -120,59 +119,51 @@ void loop() {
 
   //앱으로 조종 시 - 방2 led, 후드, 가스 밸브 조종
 
-   if(mySerial.available())        //앱에서 데이터 발생, 블루투스 모듈로 데이터 입력됬을 시(조종)
+   if(btSerial.available())        //앱에서 데이터 발생, 블루투스 모듈로 데이터 입력됬을 시(조종)
   {
-    byte input = mySerial.read();   //데이터 읽어 input 변수에 저장.
+    byte input = btSerial.read();   //데이터 읽어 input 변수에 저장.
 
 
     switch(input)                   //input 값 맞는 case 실행
     {
       //방2 led on/off
       case 31:
-           led2State = !led2State; 
-           digitalWrite(LED_room2, led2State ? HIGH : LOW);  // 후드 ON(속도 200) / OFF(0)
+           digitalWrite(LED_room2, HIGH);  
            break;
 
 
-      //후드 on/off
       case 32:
-          hoodState = !hoodState;  // 후드 ON/OFF 토글
-          digitalWrite(HOOD_MOTOR, hoodState ? HIGH : LOW);  // 후드 ON / OFF
-          break;
+           digitalWrite(LED_room2, LOW);
+           break;
+
 
       //부엌 창문 열/닫
        case 33:
-          servo3.attach(SERVO_GAS);                             //서보모터 출력
+          servo3.attach(SERVO_WIN);                             //서보모터 출력
           servo3.write(60);       
           delay(1000);               //서보모터가 위치까지 도달할 수 있도록 1초 대기
           servo3.detach();         //서보모터 출력 신호 정지
 
       case 34:
-          servo3.attach(SERVO_GAS);                             //서보모터 출력
+          servo3.attach(SERVO_WIN);                             //서보모터 출력
           servo3.write(0);       
           delay(1000);               //서보모터가 위치까지 도달할 수 있도록 1초 대기
           servo3.detach();         //서보모터 출력 신호 정지
 
 
-
-
-      //밸브 열/닫
+      //후드 on/off(리모컨)
       case 35:
-          servo4.attach(SERVO_GAS);                             //서보모터 출력
-          servo4.write(15);       
-          delay(1000);               //서보모터가 위치까지 도달할 수 있도록 1초 대기
-          servo4.detach();         //서보모터 출력 신호 정지
-
-      case 36:
-          servo4.attach(SERVO_GAS);                             //서보모터 출력
-          servo4.write(170);       //서보모터와 가스배관과 90도 방향되도록 회전
-          delay(1000);               //서보모터가 위치까지 도달할 수 있도록 1초 대기
-          servo4.detach();         //서보모터 출력 신호 정지
+          hoodState = !hoodState;  // 후드 ON/OFF 토글
+          digitalWrite(HOOD_MOTOR, hoodState ? HIGH : LOW);  // 후드 ON / OFF
+          break;
 
       
 
     }
   }
+
+
+}
 
 
 }
