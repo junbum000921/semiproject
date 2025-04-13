@@ -234,7 +234,10 @@ void receiveEvent(int numBytes) {//스케쥴링 변수 받기 위해 두개의 �
         for (int i = 0; i < 6; i++) {
             if (Wire.available()) {
                 scheduleInputs[i] = Wire.read();
+                Serial.print(scheduleInputs[i]);
+                Serial.print(" ");
             }
         }
+        Serial.println("");
     }
 }
