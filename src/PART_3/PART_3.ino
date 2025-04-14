@@ -40,8 +40,8 @@ unsigned long displayStartTime = 0;           // 화면 표시 시작 시간
 //int value = 0;                          //터치센서 스위칭 횟수
 
 int start_time = millis(); //setup위에 넣기
-int led_on_time;
-
+bool led_on = false; // loop 위에 전역으로 선언
+unsigned long led_on_time = 0;
 void setup() {
   Serial.begin(9600);
 
@@ -80,8 +80,7 @@ void setup() {
 
 void loop() {
 //변수 설정
-  int gasValue = analogRead(GAS_OUT);           //아날로그데이터 읽어 gasValue 저장(가스센서 신호)
-  int pir_value = digitalRead(PIR);        //사람 감지해서 현관 등 제어
+  int gasValue = analogRead(GAS_OUT);           //아날로그데이터 읽어 gasValue 저장(가스센서 신호)        //사람 감지해서 현관 등 제어
   int touchState = digitalRead(TOUCH2);         //터치 감지해서 후드, 창문 제어
 
 
@@ -145,19 +144,21 @@ void loop() {
 
 //현관
 
-    if(pir_value == HIGH){  //움직임 감지 시
-        digitalWrite(LED_DOOR, HIGH);   
-        led_on_time = millis();
-        Serial.println("Detected");
-        Serial.println("LED ON");
-        Serial.println(led_on_time);
-  
-    }
-    else if((millis()-led_on_time)>=2000){
-        digitalWrite(LED_DOOR,LOW);
-        Serial.println("LED OFF");
-        Serial.println(millis()-led_on_time);
-    }  
+  int pir_value = digitalRead(PIR);
+
+  if (pir_value == HIGH && !led_on) {
+    digitalWrite(LED_DOOR, HIGH);
+    led_on_time = millis();
+    led_on = true;
+    Serial.println("Detected");
+    Serial.println("LED ON");
+  }
+
+  if (led_on && (millis() - led_on_time >= 20000)) {
+    digitalWrite(LED_DOOR, LOW);
+    led_on = false;
+    Serial.println("LED OFF");
+  }
 
 
 //주방
