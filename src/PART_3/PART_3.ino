@@ -145,15 +145,18 @@ void loop() {
 
 //현관
 
-if(pir_value == HIGH){  //움직임 감지 시
+    if(pir_value == HIGH){  //움직임 감지 시
         digitalWrite(LED_DOOR, HIGH);   
         led_on_time = millis();
         Serial.println("Detected");
+        Serial.println("LED ON");
+        Serial.println(led_on_time);
   
     }
-    if((millis()-led_on_time)>=20000){
+    else if((millis()-led_on_time)>=2000){
         digitalWrite(LED_DOOR,LOW);
-        led_on_time = 0;      //타이머 초기화
+        Serial.println("LED OFF");
+        Serial.println(millis()-led_on_time);
     }  
 
 
