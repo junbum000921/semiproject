@@ -57,9 +57,7 @@ void setup(){
         delay(10);
     }
     servo1.detach();
-
-  
-
+    
     pinMode(PIEZO_livingroom, OUTPUT);
     pinMode(LED_toilet, OUTPUT);
     pinMode(LED_door, OUTPUT);
@@ -118,7 +116,7 @@ void FAN_control(){
 }
 
 void WINDOW_control(int open_close){
-    servo1.attach(SERVO_window);
+    servo1.attach(SERVO_window);       //동작 중이 아닐 때 떨림 방지
     if(open_close == 1){
         servo_window_value = 177;
         servo1.write(servo_window_value);
@@ -132,7 +130,7 @@ void WINDOW_control(int open_close){
         delay(10);
     }
 
-    servo1.detach();
+    servo1.detach();                 //동작 중이 아닐 때 떨림 방지
 }
 
 float temperature=0;
@@ -171,7 +169,7 @@ void loop(){
         Serial.println(h_i);
         Serial.println(d_i);
     }
-
+    //I2C 입력
     switch(input){
         case 7: LED_control(1); break;
         case 8: LED_control(2); break;
@@ -189,15 +187,16 @@ void loop(){
     }
     input=0;
 
+    //리모컨 입력
     if (irrecv.decode(&results)){
         switch (results.value){
-            case 0xFF6897: LED_control(1); break;
-            case 0xFF9867: LED_control(2); break;
-            case 0xFFB04F: LED_control(3); break;
-            case 0xFF30CF: LED_control(4); break;
-            case 0xFF18E7: FAN_control(); break;
-            case 0xFFC23D: WINDOW_control(1); break;
-            case 0xFF22DD: WINDOW_control(2); break;
+            case 0xFF6897: LED_control(1); break;    // 1: 거실 LED 제어
+            case 0xFF9867: LED_control(2); break;    // 2: 방1 LED 제어
+            case 0xFFB04F: LED_control(3); break;    // 3: 방2 LED 제어
+            case 0xFF30CF: LED_control(4); break;    // 4: 화장실 LED 제어
+            case 0xFF18E7: FAN_control(); break;    // 5: 실링팬 제어
+            case 0xFFC23D: WINDOW_control(1); break;    // ->: 창문 엶
+            case 0xFF22DD: WINDOW_control(2); break;    // <-: 창문 닫음
         }
         irrecv.resume();
     }
