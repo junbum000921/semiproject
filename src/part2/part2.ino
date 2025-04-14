@@ -171,19 +171,19 @@ void loop(){
     }
     //I2C 입력
     switch(input){
-        case 7: LED_control(1); break;
-        case 8: LED_control(2); break;
-        case 9: LED_control(3); break;
-        case 10: LED_control(4); break;
-        case 11: FAN_control(); break;
-        case 12:
+        case 7: LED_control(1); break;    // 거실 LED 제어
+        case 8: LED_control(2); break;    // 방1 LED 제어
+        case 9: LED_control(3); break;    // 방2 LED 제어
+        case 10: LED_control(4); break;    // 화장실 LED 제어
+        case 11: FAN_control(); break;    // 실링팬 제어
+        case 12:                          // 창문 제어
             if(servo_window_value <= 120) WINDOW_control(1);
             else WINDOW_control(2);
             break;
-        case 13: handlePIEZO(PIEZO_livingroom, 1); break;
-        case 14: handlePIEZO(PIEZO_livingroom, 2); break;
-        case 15: handlePIEZO(PIEZO_room1, 2); break;
-        case 16: handlePIEZO(PIEZO_room2, 2); break;
+        case 13: handlePIEZO(PIEZO_livingroom, 1); break;    // 거실 피에조 초인종 소리
+        case 14: handlePIEZO(PIEZO_livingroom, 2); break;    // 거실 피에조 알람 소리
+        case 15: handlePIEZO(PIEZO_room1, 2); break;    // 방1 피에조 알람 소리
+        case 16: handlePIEZO(PIEZO_room2, 2); break;    // 방2 피에조 알람 소리
     }
     input=0;
 
@@ -215,7 +215,7 @@ void requestEvent() {
 
 
 void receiveEvent(int howMany){
-  if (howMany >= 2) {
+  if (howMany >= 2) {                  // master에게 값을 2개 이상 받았을 때 스케줄 시간을 설정
     byte low = Wire.read();
     byte high = Wire.read();
     int16_t receivedValue = (int16_t)(low | (high << 8));
@@ -254,7 +254,7 @@ void receiveEvent(int howMany){
     }
     // 받은 값에 따라 동작
   }
-  else{
+  else{                       // master에게 값을 1개만 받았을 때는 현재시간으로 설정
     int a=Wire.read();
     input=a;
     Serial.println(input);
@@ -267,7 +267,7 @@ void receiveEvent(int howMany){
 }
 
 void handleSchedule() {
-  if (livingroom_led_starttime == nowhour) {
+  if (livingroom_led_starttime == nowhour) {           //스케줄시간과 현재 시간이 같으면 동작 실행
     LED_control(1);  // 거실 LED 제어
     Serial.println("스케줄 - 거실 LED 실행됨");
     livingroom_led_starttime = -1; // 한 번 실행 후 초기화
