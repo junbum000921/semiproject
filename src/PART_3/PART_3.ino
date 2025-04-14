@@ -151,7 +151,7 @@ if(pir_value == HIGH){  //움직임 감지 시
         Serial.println("Detected");
   
     }
-    if((millis()-led_on_time)>=2000){
+    if((millis()-led_on_time)>=20000){
         digitalWrite(LED_DOOR,LOW);
         led_on_time = 0;      //타이머 초기화
     }  
